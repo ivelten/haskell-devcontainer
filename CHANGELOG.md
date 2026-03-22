@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scout-report.sh` script for generating Docker Scout vulnerability reports
 - `.gitignore` file
 
-## [1.0.0] - 2026-03-22
+## [1.0.0] - 2026-03-10
 
 - Initial release
 - Haskell toolchain: GHC 9.10.3, Cabal 3.12.1.0, Stack, GHCup, HLS
