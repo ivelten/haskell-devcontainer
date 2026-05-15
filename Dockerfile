@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/devcontainers/base:debian
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 1. Install System Dependencies
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     git \
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 
 # 2. Install Node.js 22 LTS from NodeSource (newer runtime with security patches)
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y --no-install-recommends nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 3. Install direnv from GitHub releases (pinned version — update intentionally, not via "latest")
