@@ -25,10 +25,11 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     procps \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. Install Node.js 22 LTS from NodeSource
+# 2. Install Node.js 22 LTS from NodeSource, then upgrade npm to get patched picomatch (>=4.0.4)
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    npm install -g npm@latest
 
 # 3. Install direnv (compiled with patched Go stdlib — see builder stage above)
 COPY --from=direnv-builder /go/bin/direnv /usr/local/bin/direnv
