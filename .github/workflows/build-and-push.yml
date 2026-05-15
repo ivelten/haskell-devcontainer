@@ -85,6 +85,9 @@ jobs:
         run: |
           if grep -q '"level": "error"' "$GITHUB_WORKSPACE/trivy-results.sarif"; then
             echo "CRITICAL/HIGH vulnerabilities found. Blocking push."
+            echo ""
+            echo "Affected packages:"
+            grep -o '"message": { "text": "[^"]*"' "$GITHUB_WORKSPACE/trivy-results.sarif" | sed 's/"message": { "text": "//;s/"//' | sort -u
             exit 1
           fi
 
