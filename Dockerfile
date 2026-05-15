@@ -25,24 +25,18 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     procps \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. Install Node.js 22 LTS from NodeSource, then upgrade npm to get patched picomatch (>=4.0.4)
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    npm install -g npm@latest
-
-# 3. Install direnv (compiled with patched Go stdlib — see builder stage above)
+# 2. Install direnv (compiled with patched Go stdlib — see builder stage above)
 COPY --from=direnv-builder /go/bin/direnv /usr/local/bin/direnv
 
 # Switch to the non-root 'vscode' user provided by the base image
 USER vscode
 SHELL ["/bin/bash", "-c"]
 
-# 4. Configure Haskell Environment Path
+# 3. Configure Haskell Environment Path
 # Ensures ghcup, cabal, and stack binaries are prioritized in the PATH
 ENV PATH="/home/vscode/.cabal/bin:/home/vscode/.local/bin:/home/vscode/.ghcup/bin:$PATH"
 
-# 5. Install Haskell Toolchain (GHCup, GHC, Cabal, HLS, Stack)
+# 4. Install Haskell Toolchain (GHCup, GHC, Cabal, HLS, Stack)
 # Using GHC 9.10.3 as the primary compiler version
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | \
     BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
@@ -52,19 +46,19 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | \
     BOOTSTRAP_HASKELL_INSTALL_HLS=1 sh && \
     ghcup set ghc 9.10.3
 
-# 6. Install Haskell Tools (Hoogle, Ormolu, Fast-Tags, DAP Adapters)
+# 5. Install Haskell Tools (Hoogle, Ormolu, Fast-Tags, DAP Adapters)
 RUN cabal update && \
     cabal install hoogle fast-tags ormolu cabal-gild \
     haskell-dap ghci-dap haskell-debug-adapter \
     --overwrite-policy=always && \
     hoogle generate
 
-# 7. Cabal Performance Tuning
+# 6. Cabal Performance Tuning
 RUN mkdir -p ~/.cabal && \
     echo "jobs: \$ncpus" >> ~/.cabal/config && \
     echo "documentation: False" >> ~/.cabal/config
 
-# 8. Shell Integration (Direnv & Welcome Message)
+# 7. Shell Integration (Direnv & Welcome Message)
 RUN echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && \
     echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && \
     echo -e "🖥️ Haskell Dev Env Ready!\n- GHC 9.10.3\n- Tools: Hoogle, Ormolu, HLS" > /home/vscode/.welcome_message && \
