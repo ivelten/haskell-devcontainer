@@ -23,9 +23,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 3. Install direnv from GitHub releases (newer Go build addresses stdlib CVEs)
+# 3. Install direnv from GitHub releases (pinned version — update intentionally, not via "latest")
+ARG DIRENV_VERSION=2.37.1
 RUN ARCH=$(dpkg --print-architecture) && \
-    curl -fsSL "https://github.com/direnv/direnv/releases/latest/download/direnv.linux-${ARCH}" -o /usr/local/bin/direnv && \
+    curl -fsSL "https://github.com/direnv/direnv/releases/download/v${DIRENV_VERSION}/direnv.linux-${ARCH}" -o /usr/local/bin/direnv && \
     chmod +x /usr/local/bin/direnv
 
 # 4. Install Claude Code CLI globally via NPM

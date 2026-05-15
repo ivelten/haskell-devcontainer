@@ -7,7 +7,17 @@ A ready-to-use Docker image for Haskell development, built on top of the [VS Cod
 ```jsonc
 // .devcontainer/devcontainer.json
 {
-  "image": "ivelten/haskell-devcontainer:latest"
+  "image": "ivelten/haskell-devcontainer:latest",
+  "remoteUser": "vscode",
+  // Drop all Linux capabilities not needed for Haskell development.
+  // Do NOT add privileged:true or mount /var/run/docker.sock — doing so
+  // grants the container (and any AI assistant running inside it) full
+  // control over the Docker daemon on your host.
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges:true",
+    "--pids-limit=2048"
+  ]
 }
 ```
 
@@ -51,6 +61,18 @@ Images are built for both `linux/amd64` (Intel/AMD) and `linux/arm64` (Apple Sil
 ## CI/CD
 
 The image is automatically built and published to Docker Hub on every push to `main` and on version tags (`v*.*.*`), via GitHub Actions. Versioned tags follow semver: pushing `v1.2.3` publishes `:1.2.3`, `:1.2`, `:1`, and `:latest`.
+
+## Security
+
+The image is designed to run without host privileges. The `runArgs` in the Quick Start snippet enforce this:
+
+| Flag | What it prevents |
+| --- | --- |
+| `--cap-drop=ALL` | Removes all Linux capabilities (filesystem ownership changes, raw sockets, kernel module loading, etc.) |
+| `--security-opt=no-new-privileges:true` | Prevents any process inside the container from gaining elevated privileges via `setuid`/`setgid` binaries |
+| `--pids-limit=2048` | Limits the number of processes to prevent fork bombs; high enough for parallel GHC compilation |
+
+**Never add** `"privileged": true` or mount `/var/run/docker.sock` into the container. Either grants any process running inside (including AI coding assistants) full control over the Docker daemon on your host machine — a trivial container escape.
 
 ## Notes
 

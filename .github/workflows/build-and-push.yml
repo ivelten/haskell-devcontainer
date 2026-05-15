@@ -16,10 +16,19 @@ jobs:
 
     permissions:
       contents: read
+      security-events: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Scan Dockerfile for misconfigurations
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: config
+          scan-ref: .
+          exit-code: "1"
+          severity: CRITICAL,HIGH
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -44,7 +53,35 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
-      - name: Build and push
+      # Build amd64 locally first so Trivy can scan before the multi-arch push
+      - name: Build amd64 image for scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: scan-target:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Scan image for OS & library vulnerabilities
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: scan-target:latest
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Build and push multi-platform image
         uses: docker/build-push-action@v6
         with:
           context: .
