@@ -83,11 +83,13 @@ jobs:
 
       - name: Fail if vulnerabilities found
         run: |
-          if grep -q '"level": "error"' "$GITHUB_WORKSPACE/trivy-results.sarif"; then
+          COUNT=$(jq '[.runs[].results[] | select(.level == "error")] | length' "$GITHUB_WORKSPACE/trivy-results.sarif")
+          if [ "$COUNT" -gt 0 ]; then
             echo "CRITICAL/HIGH vulnerabilities found. Blocking push."
             echo ""
             echo "Affected packages:"
-            grep -o '"message": { "text": "[^"]*"' "$GITHUB_WORKSPACE/trivy-results.sarif" | sed 's/"message": { "text": "//;s/"//' | sort -u
+            jq -r '.runs[].results[] | select(.level == "error") | .message.text' "$GITHUB_WORKSPACE/trivy-results.sarif" \
+              | sed 's/\\n/\n/g' | grep -E '^(Package|Installed Version|Fixed Version|Severity|Link):' | sort -u
             exit 1
           fi
 
