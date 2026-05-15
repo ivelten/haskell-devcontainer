@@ -3,7 +3,7 @@
 # Update DIRENV_VERSION and the golang tag together when upgrading.
 FROM golang:1.26.3-bookworm AS direnv-builder
 ARG DIRENV_VERSION=2.37.1
-RUN go install github.com/direnv/direnv@v${DIRENV_VERSION}
+RUN go install github.com/direnv/direnv/v2@v${DIRENV_VERSION}
 
 FROM mcr.microsoft.com/devcontainers/base:debian
 
