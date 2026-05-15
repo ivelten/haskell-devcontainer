@@ -15,11 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Pin direnv to v2.37.1 via `ARG` instead of downloading `latest`
+- Compile direnv from source using `golang:1.26.3-bookworm` in a multi-stage build, replacing the prebuilt GitHub release binary — this embeds a patched Go stdlib and fixes all `stdlib` CVEs (CVE-2025-58183, CVE-2025-61726, CVE-2025-61728, CVE-2025-61729, CVE-2025-68121, CVE-2026-25679, CVE-2026-32280, CVE-2026-32281, CVE-2026-32283, CVE-2026-33671, CVE-2026-33811, CVE-2026-33814, CVE-2026-39820, CVE-2026-39836, CVE-2026-42499)
 - Document hardened `devcontainer.json` with `--cap-drop=ALL`, `no-new-privileges`, `pids-limit`
 
 ### Removed
 
+- `@anthropic-ai/claude-code` from the image — its precompiled binary bundles `picomatch` 4.0.3 (CVE-2025-47907) and cannot be updated independently; install it via `postCreateCommand` in your `devcontainer.json` instead: `"postCreateCommand": "npm install -g @anthropic-ai/claude-code"`
 - `scout-report.sh` script, superseded by Trivy CI gates
 
 ## [1.0.1] - 2026-03-22
